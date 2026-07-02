@@ -70,13 +70,13 @@ export function ChatWorkspace({ docs, messages, setMessages, ingesting }: Props)
         prev.map((m) => (m.id === aiId ? { ...m, content: full, streaming: false } : m)),
       );
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
+      console.error("Chat request failed", err);
       setMessages((prev) => [
         ...prev,
         {
           id: aiId,
           role: "assistant",
-          content: `⚠️ **Something went wrong.** ${msg}`,
+          content: `⚠️ **Something went wrong.** Please try again in a moment.`,
         },
       ]);
     } finally {
