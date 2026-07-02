@@ -98,7 +98,7 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
               </div>
               <h3 className="text-xl font-semibold">Ask anything about your document</h3>
               <p className="text-sm text-muted-foreground mt-1.5">
-                {apiKey ? "Live mode ready." : "Demo mode — add a Gemini key for real answers."}
+                Powered by Lovable AI — answers are grounded in your document.
               </p>
             </div>
           ) : (
