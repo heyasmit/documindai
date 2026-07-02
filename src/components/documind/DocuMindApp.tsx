@@ -20,15 +20,14 @@ export function DocuMindApp() {
 
   const handleFiles = useCallback(async (files: File[]) => {
     const accepted = files.filter((f) => f.size <= MAX_SIZE);
+    const { extractText } = await import("@/lib/extract-text");
     const newDocs: UploadedDoc[] = [];
     for (const file of accepted) {
       let preview = "";
       try {
-        if (file.type === "text/plain" || file.name.endsWith(".txt")) {
-          preview = (await file.text()).slice(0, 4000);
-        }
-      } catch {
-        // ignore
+        preview = await extractText(file);
+      } catch (err) {
+        console.error("extraction failed", err);
       }
       newDocs.push({
         id: crypto.randomUUID(),

@@ -67,7 +67,7 @@ export function Sidebar({
           autoComplete="off"
         />
         <p className="text-[11px] text-muted-foreground">
-          {apiKey ? "✓ Key set — live mode" : "Demo mode active (no key required)"}
+          Powered by Lovable AI — the key field is optional (unused by default).
         </p>
       </div>
 
