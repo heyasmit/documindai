@@ -81,10 +81,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Upload PDFs, Word docs, and text files. Ask questions and get instant AI-powered answers grounded in your documents." },
       { name: "author", content: "DocuMind AI" },
       { property: "og:title", content: "DocuMind AI — Chat with your documents" },
-      { property: "og:description", content: "Upload PDFs, Word docs, and text files. Ask questions and get instant AI-powered answers." },
+      { property: "og:description", content: "Upload PDFs, Word docs, and text files. Ask questions and get instant AI-powered answers grounded in your documents." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "DocuMind AI — Chat with your documents" },
+      { name: "twitter:description", content: "Upload PDFs, Word docs, and text files. Ask questions and get instant AI-powered answers grounded in your documents." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/7804df9f-6eaf-4d1e-913d-848cc1564a91" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/7804df9f-6eaf-4d1e-913d-848cc1564a91" },
     ],
     links: [
       {
