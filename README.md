@@ -3,7 +3,7 @@
 DocuMind is a document-aware chat assistant for students and researchers. Upload multiple PDFs, DOCX, or text files (e.g. a syllabus plus previous-year question papers), then ask cross-document questions — most-repeated questions, key topics, important notes, summaries, etc. Answers cite the source file inline.
 
 Built with [TanStack Start](https://tanstack.com/start) + React 19 + Tailwind v4, powered by the Lovable AI Gateway (Gemini).
-
+direct link. https://documindai.lovable.app/
 ## Features
 
 - 📚 **Multi-document sessions** — upload a syllabus and several PYQ papers at once and query them as a single corpus
