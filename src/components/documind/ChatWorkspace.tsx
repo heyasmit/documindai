@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ArrowUp, Sparkles, User } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import type { ChatMessage, UploadedDoc } from "./types";
