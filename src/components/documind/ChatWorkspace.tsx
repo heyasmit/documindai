@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { ArrowUp, Sparkles, User } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import type { ChatMessage, UploadedDoc } from "./types";
+import { askDocument } from "@/lib/chat.functions";
 
 type Props = {
   doc: UploadedDoc;
@@ -17,24 +19,11 @@ const SUGGESTIONS = [
   "Explain like I'm 5",
 ];
 
-function mockAnswer(prompt: string, doc: UploadedDoc): string {
-  const p = prompt.toLowerCase();
-  if (p.includes("summar")) {
-    return `Here's a concise summary of **${doc.name}**:\n\n- The document introduces its core topic and frames the problem it addresses.\n- It walks through supporting evidence, examples, and methodology.\n- The conclusion synthesizes the main arguments and proposes next steps.\n\n*Note: This is a demo response. Add your Gemini API key for grounded answers.*`;
-  }
-  if (p.includes("takeaway") || p.includes("key")) {
-    return `**Key takeaways from ${doc.name}:**\n\n1. **Primary thesis** — the central claim the document is built around.\n2. **Supporting evidence** — data, references, and case studies cited.\n3. **Implications** — what this means in practice.\n4. **Open questions** — areas the document leaves unresolved.`;
-  }
-  if (p.includes("action")) {
-    return `**Action items identified:**\n\n- [ ] Review the referenced sources for context\n- [ ] Follow up on the recommendations in section 3\n- [ ] Share findings with your team\n- [ ] Schedule a decision point within two weeks`;
-  }
-  return `Great question about **${doc.name}**. Based on the content, here's what I can tell you:\n\nThe document addresses your query by walking through several supporting points. If you'd like, I can dig deeper into a specific section or extract a particular detail.\n\n> Tip: add your Gemini API key in the sidebar to enable real, document-grounded answers.`;
-}
-
-export function ChatWorkspace({ doc, apiKey, messages, setMessages }: Props) {
+export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: Props) {
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const ask = useServerFn(askDocument);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -52,27 +41,47 @@ export function ChatWorkspace({ doc, apiKey, messages, setMessages }: Props) {
     setInput("");
     setIsThinking(true);
 
-    // Simulated streaming response
-    const full = mockAnswer(trimmed, doc);
     const aiId = crypto.randomUUID();
-    setMessages((prev) => [...prev, { id: aiId, role: "assistant", content: "", streaming: true }]);
-
-    // small "thinking" delay
-    await new Promise((r) => setTimeout(r, 450));
-
-    const tokens = full.split(/(\s+)/);
-    for (let i = 0; i < tokens.length; i++) {
-      await new Promise((r) => setTimeout(r, 18));
+    try {
+      const history = messages.map((m) => ({ role: m.role, content: m.content }));
+      const result = await ask({
+        data: {
+          docName: doc.name,
+          docText: doc.preview ?? "",
+          history,
+          question: trimmed,
+        },
+      });
+      const full = result.text ?? "";
+      setMessages((prev) => [
+        ...prev,
+        { id: aiId, role: "assistant", content: "", streaming: true },
+      ]);
+      // Reveal in chunks for a streaming feel
+      const chunkSize = Math.max(2, Math.floor(full.length / 120));
+      for (let i = 0; i < full.length; i += chunkSize) {
+        await new Promise((r) => setTimeout(r, 10));
+        const upto = full.slice(0, i + chunkSize);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === aiId ? { ...m, content: upto } : m)),
+        );
+      }
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === aiId ? { ...m, content: m.content + tokens[i] } : m,
-        ),
+        prev.map((m) => (m.id === aiId ? { ...m, content: full, streaming: false } : m)),
       );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: aiId,
+          role: "assistant",
+          content: `⚠️ **Something went wrong.** ${msg}`,
+        },
+      ]);
+    } finally {
+      setIsThinking(false);
     }
-    setMessages((prev) =>
-      prev.map((m) => (m.id === aiId ? { ...m, streaming: false } : m)),
-    );
-    setIsThinking(false);
   };
 
   const isEmpty = messages.length === 0;
