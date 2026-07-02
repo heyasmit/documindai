@@ -1,4 +1,5 @@
 import { Brain, FileText, Info, Plus, Trash2, X } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 import type { UploadedDoc } from "./types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -27,10 +28,11 @@ export function Sidebar({
           <div className="h-9 w-9 rounded-lg bg-gradient-primary shadow-glow flex items-center justify-center">
             <Brain className="h-5 w-5 text-primary-foreground" />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h2 className="font-semibold tracking-tight">DocuMind AI</h2>
             <p className="text-[11px] text-muted-foreground">Chat with any document</p>
           </div>
+          <ThemeToggle />
         </div>
       </div>
 
