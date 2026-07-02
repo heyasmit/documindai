@@ -4,12 +4,14 @@ import { UploadCloud, FileText, FileType2, FileCode2 } from "lucide-react";
 type Props = {
   onFiles: (files: File[]) => void;
   maxSize: number;
+  multiple?: boolean;
 };
 
-export function UploadZone({ onFiles, maxSize }: Props) {
+export function UploadZone({ onFiles, maxSize, multiple = true }: Props) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: onFiles,
     maxSize,
+    multiple,
     accept: {
       "application/pdf": [".pdf"],
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
@@ -42,10 +44,10 @@ export function UploadZone({ onFiles, maxSize }: Props) {
             </div>
             <div>
               <p className="text-base font-medium">
-                {isDragActive ? "Drop it here" : "Drag & drop your file"}
+                {isDragActive ? "Drop them here" : "Drag & drop your files"}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                or <span className="text-primary font-medium">browse from your computer</span>
+                or <span className="text-primary font-medium">browse from your computer</span> — upload multiple at once
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">

@@ -1,26 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowUp, Sparkles, User } from "lucide-react";
+import { ArrowUp, Sparkles, User, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import type { ChatMessage, UploadedDoc } from "./types";
 import { askDocument } from "@/lib/chat.functions";
 
 type Props = {
-  doc: UploadedDoc;
+  docs: UploadedDoc[];
   apiKey: string;
   messages: ChatMessage[];
   setMessages: (updater: (prev: ChatMessage[]) => ChatMessage[]) => void;
+  ingesting?: boolean;
 };
 
 const SUGGESTIONS = [
-  "Summarize this document",
-  "List key takeaways",
-  "Find action items",
-  "Explain like I'm 5",
+  "Most repeated questions across all PYQs",
+  "Priority topics for exam prep",
+  "Summarize the syllabus",
+  "Important notes across all files",
 ];
 
-export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: Props) {
+export function ChatWorkspace({ docs, messages, setMessages, ingesting }: Props) {
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -32,7 +33,7 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
 
   const send = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || isThinking) return;
+    if (!trimmed || isThinking || docs.length === 0) return;
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -47,8 +48,7 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
       const history = messages.map((m) => ({ role: m.role, content: m.content }));
       const result = await ask({
         data: {
-          docName: doc.name,
-          docText: doc.preview ?? "",
+          docs: docs.map((d) => ({ name: d.name, text: d.preview ?? "" })),
           history,
           question: trimmed,
         },
@@ -58,7 +58,6 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
         ...prev,
         { id: aiId, role: "assistant", content: "", streaming: true },
       ]);
-      // Reveal in chunks for a streaming feel
       const chunkSize = Math.max(2, Math.floor(full.length / 120));
       for (let i = 0; i < full.length; i += chunkSize) {
         await new Promise((r) => setTimeout(r, 10));
@@ -89,7 +88,6 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
 
   return (
     <div className="h-full flex flex-col">
-      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="max-w-3xl mx-auto px-6 py-8">
           {isEmpty ? (
@@ -97,10 +95,17 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
               <div className="inline-flex h-14 w-14 rounded-2xl bg-gradient-primary shadow-glow items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-primary-foreground" />
               </div>
-              <h3 className="text-xl font-semibold">Ask anything about your document</h3>
+              <h3 className="text-xl font-semibold">
+                Ask across {docs.length} document{docs.length === 1 ? "" : "s"}
+              </h3>
               <p className="text-sm text-muted-foreground mt-1.5">
-                Powered by Lovable AI — answers are grounded in your document.
+                Upload syllabi and PYQs together — DocuMind cross-references them and cites sources.
               </p>
+              {ingesting && (
+                <p className="text-xs text-muted-foreground mt-3 inline-flex items-center gap-1.5">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Reading new files…
+                </p>
+              )}
             </div>
           ) : (
             <div className="space-y-6">
@@ -116,7 +121,7 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
                     <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
                     <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
                     <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" />
-                    <span className="ml-2">Thinking…</span>
+                    <span className="ml-2">Thinking across {docs.length} file{docs.length === 1 ? "" : "s"}…</span>
                   </div>
                 </div>
               )}
@@ -125,7 +130,6 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
         </div>
       </div>
 
-      {/* Composer */}
       <div className="border-t bg-surface/60 backdrop-blur">
         <div className="max-w-3xl mx-auto px-6 py-4">
           <div className="flex flex-wrap gap-2 mb-3">
@@ -133,7 +137,7 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
               <button
                 key={s}
                 onClick={() => send(s)}
-                disabled={isThinking}
+                disabled={isThinking || ingesting}
                 className="text-xs px-3 py-1.5 rounded-full border bg-surface hover:bg-accent hover:border-primary/40 hover:text-accent-foreground transition disabled:opacity-50"
               >
                 {s}
@@ -157,7 +161,11 @@ export function ChatWorkspace({ doc, apiKey: _apiKey, messages, setMessages }: P
                 }
               }}
               rows={1}
-              placeholder="Ask anything about this document..."
+              placeholder={
+                docs.length > 1
+                  ? `Ask anything across your ${docs.length} files...`
+                  : "Ask anything about this document..."
+              }
               className="flex-1 resize-none bg-transparent outline-none px-3 py-2 text-sm max-h-40 min-h-[36px]"
             />
             <button
