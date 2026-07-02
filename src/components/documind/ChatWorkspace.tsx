@@ -205,7 +205,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
         <Sparkles className="h-4 w-4 text-primary-foreground" />
       </div>
       <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface border px-4 py-3 shadow-soft">
-        <div className="prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:mt-3 prose-headings:mb-1 prose-code:text-primary prose-code:before:content-none prose-code:after:content-none prose-strong:text-foreground text-sm text-foreground/90 leading-relaxed">
+        <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:mt-3 prose-headings:mb-1 prose-code:text-primary prose-code:before:content-none prose-code:after:content-none prose-strong:text-foreground text-sm text-foreground/90 leading-relaxed">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content || "…"}</ReactMarkdown>
           {msg.streaming && (
             <span className="inline-block w-1.5 h-4 bg-primary align-middle ml-0.5 animate-blink" />
